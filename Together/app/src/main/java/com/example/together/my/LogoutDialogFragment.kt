@@ -1,4 +1,4 @@
-package com.example.together
+package com.example.together.my
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import com.example.together.LoginActivity
+import com.example.together.R
 import com.kakao.sdk.user.UserApiClient
 
 

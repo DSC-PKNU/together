@@ -1,4 +1,4 @@
-package com.example.together;
+package com.example.together.my;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +15,9 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.together.EmergencyCallSetting;
+import com.example.together.LoginActivity;
+import com.example.together.R;
 import com.kakao.sdk.auth.LoginClient;
 import com.kakao.sdk.user.UserApiClient;
 
@@ -61,7 +64,7 @@ public class MyFragment extends Fragment {
                     case 0: // 긴급 전화번호 관리
                         Toast.makeText(getContext(), "긴급전화번호 관리 페이지로 넘어갑니다",
                                 Toast.LENGTH_LONG).show();
-                        Intent callSettingIntent = new Intent(getActivity(),EmergencyCallSetting.class);
+                        Intent callSettingIntent = new Intent(getActivity(), EmergencyCallSetting.class);
                         startActivity(callSettingIntent);
 
                         break;
