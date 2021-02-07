@@ -5,4 +5,4 @@ CREATE TABLE `user` (
     PRIMARY KEY (`id`)
 );
 
-INSERT INTO `topic` VALUES ('admin_id','0000','관리자')
+INSERT INTO `user` VALUES ('admin','0000','관리자')

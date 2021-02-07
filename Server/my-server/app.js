@@ -4,6 +4,15 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var mysql = require('mysql');
+var db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '0000',
+    database: 'together_db',
+});
+db.connect();
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -62,8 +71,15 @@ io.on('connection', function (socket) {
         var whoIsOnJson = `${whoIsOn}`
         console.log(whoIsOnJson)
 
+        db.query('SELECT * FROM user', function (error, results) {
+            console.log(results);
+            
+            
+            io.emit('newUser', results)
+        });
+
         // 서버에 연결된 모든 소켓에 보냄
-        io.emit('newUser', whoIsOnJson)
+        // io.emit('newUser', whoIsOnJson)
     })
 
     socket.on('say', function (data) {

@@ -138,13 +138,15 @@ class LoginActivity : AppCompatActivity() {
     val onNewUser: Emitter.Listener = Emitter.Listener {
 
         var data = it[0]
-        if (data is String) {
-            users = data.split(",").toTypedArray() // 파싱
-            for (a: String in users) {
-                Log.d("user", a)
-            }
+        if (data != null) {
+//            users = data.split(",").toTypedArray() // 파싱
+//            for (a: String in users) {
+//                Log.d("user", a)
+//            }
+
+            Log.d("current users", data.toString())
         } else {
-            Log.d("error", "Something went wrong")
+            Log.e("error", "Something went wrong")
         }
 
     }
