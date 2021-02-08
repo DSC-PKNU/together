@@ -1,7 +1,9 @@
 package com.example.together;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,7 +19,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
@@ -32,17 +36,17 @@ import com.skt.Tmap.TMapPoint;
 import com.skt.Tmap.TMapPolyLine;
 import com.skt.Tmap.TMapView;
 import java.util.ArrayList;
+import java.util.logging.LogManager;
 
 public class SurroundingsFragment extends Fragment {
     private static String API_Key = "l7xx52f2020a27a646b995dab1ba21acdfd7";
     TMapView tMapView;
     TMapGpsManager tMapGPS;
     public final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
-    public double longitude, latitude, startLatitude, startLongitude, endLatitude, endLongitude;
-    double distanceLength;
+    public double longitude, latitude, startLatitude, startLongitude, endLatitude, endLongitude, distanceLength;
     TMapPoint tMapPointCurrent, tMapPointTo, tMapPointFrom;
     boolean count = true;
-
+    ArrayList<TMapPoint> passList = new ArrayList<TMapPoint>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,7 +86,8 @@ public class SurroundingsFragment extends Fragment {
         tMapView.setTrackingMode(true);
         //tMapGPS.setProvider(tMapGPS.NETWORK_PROVIDER);
         //tMapView.setCompassMode(true);
-
+        tMapView.setTrackingMode(true);
+        tMapView.setSightVisible(true);
 
         /**GPS Settings**/
         final LocationManager lm = (LocationManager) this.getContext().getSystemService(Context.LOCATION_SERVICE);
@@ -91,23 +96,22 @@ public class SurroundingsFragment extends Fragment {
         }
         lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, mLocationListener);
 
-
         /**Set Floating Button**/
         FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fabNavigation);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //pathOptions = selectOptions();
                 tMapPointFrom = new TMapPoint(startLatitude, startLongitude);
-                endLatitude = 35.18091375602048;
-                endLongitude = 129.07494408467085;
+                endLatitude = 35.087425;
+                endLongitude = 129.044735;
                 tMapPointTo = new TMapPoint(endLatitude, endLongitude);
-                distanceLength = distance(startLatitude, startLongitude, endLatitude, endLongitude, "kilometer");
-                String msg = "목적지까지 약 " + (int)distanceLength + "km 거리 입니다.";
-                toastDisplay(msg);
+                distanceLength = distance(startLatitude, startLongitude, endLatitude, endLongitude);
                 DrawPath();
-            }
+                String msg = "목적지까지 약 " + (int) distanceLength + "km 거리 입니다.";
+                toastDisplay(msg);
+            };
         });
-
         return view;
     }
 
@@ -122,31 +126,23 @@ public class SurroundingsFragment extends Fragment {
     }
 
     /**
-     * 두 지점간의 거리 계산
-     *
-     * @param lat1 지점 1 위도
-     * @param lon1 지점 1 경도
-     * @param lat2 지점 2 위도
-     * @param lon2 지점 2 경도
-     * @param unit 거리 표출단위
-     * @return
-     */
-    private static double distance(double lat1, double lon1, double lat2, double lon2, String unit) {
+     * 두 지점 간 거리 계산
+     * lat1 지점 1 위도
+     * lon1 지점 1 경도
+     * lat2 지점 2 위도
+     * lon2 지점 2 경도
+     **/
+    private static double distance(double lat1, double lon1, double lat2, double lon2) {
         double theta = lon1 - lon2;
         double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
 
         dist = Math.acos(dist);
         dist = rad2deg(dist);
         dist = dist * 60 * 1.1515;
+        dist = dist * 1.609344;
 
-        if (unit == "kilometer") {
-            dist = dist * 1.609344;
-        } else if(unit == "meter"){
-            dist = dist * 1609.344;
-        }
         return (dist);
     }
-
 
     private static double deg2rad(double deg) {
         return (deg * Math.PI / 180.0);
@@ -166,9 +162,8 @@ public class SurroundingsFragment extends Fragment {
                 tMapView.setLocationPoint(longitude, latitude);
                 tMapView.setCenterPoint(longitude, latitude, true);
                 //TMapPoint arrTMapPoint = tMapView.getCenterPoint();
-                //Log.d("TmapTest", "" + longitude + "," + latitude);
                 tMapPointCurrent = new TMapPoint(latitude, longitude);
-                if(distance(latitude, longitude, endLatitude, endLongitude, "kilometer") < 0.5){
+                if(distance(latitude, longitude, endLatitude, endLongitude) < 0.5){
                     String msg = "목적지에 도착하였습니다.";
                     toastDisplay(msg);
                 }
@@ -182,7 +177,6 @@ public class SurroundingsFragment extends Fragment {
             }
         }
     };
-
 
     /**Draw Path**/
     public void DrawPath(){
@@ -226,8 +220,7 @@ public class SurroundingsFragment extends Fragment {
     public void searchPOI(TMapPoint tMapPoint) {
         TMapData tMapData = new TMapData();
         final ArrayList<TMapPoint> searchPoint = new ArrayList<>();
-        /*final ArrayList<String> arrTitle = new ArrayList<>();
-        final ArrayList<String> arrAddress = new ArrayList<>();*/
+        /*final ArrayList<String> arrAddress = new ArrayList<>();*/
 
         /**Searching for Positions**/
         tMapData.findAroundNamePOI(tMapPoint, "경찰서;소방서;파출소;지구대;치안센터", 30,5000,
@@ -248,7 +241,7 @@ public class SurroundingsFragment extends Fragment {
     }
 
     /**Set Multiple BalloonMarks**/
-    public void setMultiMarkers(ArrayList<TMapPoint> searchSpot) { // ArrayList<String> arrTitle, ArrayList<String> arrAddress
+    public void setMultiMarkers(ArrayList<TMapPoint> searchSpot) {
         for( int i = 0; i < searchSpot.size(); i++ ) {
             TMapMarkerItem tMapMarkerItem = new TMapMarkerItem();
             Bitmap bitmap = createMarkerIcon(40, 40, R.drawable.green_marker);
@@ -265,18 +258,44 @@ public class SurroundingsFragment extends Fragment {
      }
      */
 
-
+/**
+ * 경유지 추가 방식 생각 중...
+ *  if( 지점 1 위도 < 지점 2 위도 )
+ *  지점 1 위도 <= pointlat <= 지점 2위도
+ *  else
+ *  지점 2 위도 <= pointlat <= 지점 1위도
+ *
+ *  if( 지점 1 경도 < 지점 2 경도 )
+ *  *  지점 1 경도 <= pointlon <= 지점 2 경도
+ *      if(poinlon - 지점 1 경도 가장 작은 것 부터)
+ *  *  else
+ *  *  지점 2 경도 <= pointlon <= 지점 1 경도
+ *      if(poinlon - 지점 2 경도 가장 작은 것 부터)
+ *  *
+ * **/
 
     /**Asynchronous Processing**/
     class PathAsync extends AsyncTask<TMapPolyLine, Void, TMapPolyLine> {
         @Override
         protected TMapPolyLine doInBackground(TMapPolyLine... tMapPolyLines) {
+            /**Maximum 5 addpoint**/
+            TMapPoint point1 = new TMapPoint(35.12963924,128.9737378);
+            TMapPoint point2 = new TMapPoint(35.13012896,128.9719989);
+            TMapPoint point3 = new TMapPoint(35.13166169,128.9737252);
+            TMapPoint point4 = new TMapPoint(35.15172479,129.0231465);
+            TMapPoint point5 = new TMapPoint(35.15349515, 129.0347378);
+            passList.add(point1);
+            passList.add(point2);
+            passList.add(point3);
+            passList.add(point4);
+            passList.add(point5);
+
             TMapPolyLine tMapPolyLine = tMapPolyLines[0];
             try {
-                tMapPolyLine = new TMapData().findPathDataWithType(TMapData.TMapPathType.PEDESTRIAN_PATH, tMapPointFrom, tMapPointTo);
-                tMapPolyLine.setLineColor(Color.MAGENTA);
-                tMapPolyLine.setLineWidth(3);
-
+                tMapPolyLine = new TMapData().findPathDataWithType(TMapData.TMapPathType.PEDESTRIAN_PATH, tMapPointFrom, tMapPointTo, passList, 0);
+                tMapPolyLine.setLineColor(Color.BLUE);
+                tMapPolyLine.setOutLineColor(Color.BLUE);
+                tMapPolyLine.setLineWidth(5);
             }
             catch(Exception e) {
                 e.printStackTrace();
@@ -284,7 +303,6 @@ public class SurroundingsFragment extends Fragment {
             }
             return tMapPolyLine;
         }
-
         @Override
         protected void onPostExecute(TMapPolyLine tMapPolyLine) {
             super.onPostExecute(tMapPolyLine);
@@ -312,5 +330,4 @@ public class SurroundingsFragment extends Fragment {
             }
         }
     }
-
 };
