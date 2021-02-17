@@ -68,7 +68,7 @@ app.post('/post', (req, res) => {
         user_name = inputData.name
         console.log("user_id: " + user_id + ", user_pw: " + user_pw + ", name: " + user_name);
 
-        db.query(`INSERT INTO user VALUES(${user_id}, ${user_pw}, ${user_name})`, function(error, results) {
+        db.query(`INSERT INTO user (id, password, name) VALUES(?, ?, ?)`, [user_id, user_pw, user_name], function(error, results) {
             console.log(results);
         });
 
