@@ -11,7 +11,7 @@ var db = mysql.createConnection({
     password: '0000',
     database: 'together_db',
 });
-// db.connect();
+db.connect();
 
 var app = express();
 var socketio = require('socket.io');
@@ -58,12 +58,25 @@ app.get('/users', (req, res) => {
 app.post('/post', (req, res) => {
     console.log('who get in here post /usres');
     var inputData;
+    var user_id, user_pw, user_name
     req.on('data', (data) => {
         inputData = JSON.parse(data);
     });
     req.on('end', () => {
-        console.log("user_id: " + inputData.user_id + ", name: " + inputData.name);
+        user_id = inputData.user_id
+        user_pw = inputData.user_pw
+        user_name = inputData.name
+        console.log("user_id: " + user_id + ", user_pw: " + user_pw + ", name: " + user_name);
+
+        db.query(`INSERT INTO user VALUES(${user_id}, ${user_pw}, ${user_name})`, function(error, results) {
+            console.log(results);
+        });
+
+        db.query(`SELECT * FROM user`, function(error, results) {
+            console.log(results);
+        });
     });
+
     res.write("OK!");
     res.end();
 })

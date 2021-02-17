@@ -69,11 +69,14 @@ class JoinActivity : AppCompatActivity() {
         })
 
         binding.bJoin.setOnClickListener {
-            register()
+            if (binding.etId.editText!!.text.toString() != "" &&
+                    binding.etPassword.editText!!.text.toString() != "" &&
+                    binding.etName.editText!!.text.toString() != "") {
+                register()
+                Toast.makeText(this, "회원가입이 완료되었습니다.", Toast.LENGTH_LONG).show()
 
-            Toast.makeText(this, "회원가입이 완료되었습니다.", Toast.LENGTH_LONG).show()
-
-            onBackPressed()
+                onBackPressed()
+            }
         }
     }
 
@@ -95,8 +98,9 @@ class JoinActivity : AppCompatActivity() {
     fun register() {
         val url = "/post"
         val data = JSONObject()
-        data.accumulate("user_id", "사용자 아이디")
-        data.accumulate("name", "사용자 이름")
+        data.accumulate("user_id", binding.etId.editText!!.text.toString())
+        data.accumulate("user_pw", binding.etPassword.editText!!.text.toString())
+        data.accumulate("name", binding.etName.editText!!.text.toString())
 
         GlobalScope.launch {
             var con: HttpURLConnection? = null
