@@ -10,15 +10,31 @@ import com.example.together.databinding.ActivityMainBinding
 import com.example.together.my.MyFragment
 import com.kakao.sdk.auth.LoginClient
 import com.kakao.sdk.user.UserApiClient
+import io.socket.client.IO
+import io.socket.client.Socket
+import java.net.URISyntaxException
 import java.util.*
 
 const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var mSocket: Socket
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mSocket = IO.socket(serverAddr)!!
+        try {
+            // socket과 server 연결
+            // server의 io.on() 실행
+            mSocket.connect()
+
+            Log.d("onConnect", "서버에 연결 완료")
+        } catch (e: URISyntaxException) {
+            Log.e("onConnect", e.reason)
+        }
 
         // 사용자 정보 요청
         UserApiClient.instance.me { user, error ->
@@ -30,6 +46,8 @@ class MainActivity : AppCompatActivity() {
                             "\n회원번호: ${user.id}" +
                             "\n이메일: ${user.kakaoAccount?.email}" +
                          "\n닉네임: ${user.kakaoAccount?.profile?.nickname}")
+
+                    saveUserInfo(user.kakaoAccount?.email.toString())
                 } else if (user.kakaoAccount?.emailNeedsAgreement == false) {
                     Log.e(TAG, "사용자 계정에 이메일 없음. 꼭 필요하다면 동의항목 설정에서 수집 기능을 활성화 해보세요.")
                 } else if (user.kakaoAccount?.emailNeedsAgreement == true) {
@@ -48,7 +66,8 @@ class MainActivity : AppCompatActivity() {
                                 if (error != null) {
                                     Log.e(TAG, "사용자 정보 요청 실패", error)
                                 } else if (emailUser != null) {
-                                    Log.i(TAG, "이메일: $emailUser.kakaoAccount?.email")
+                                    Log.i(TAG, "이메일: ${emailUser.kakaoAccount?.email}")
+                                    saveUserInfo(emailUser.kakaoAccount?.email.toString())
                                 }
                             }
                         }
@@ -59,7 +78,7 @@ class MainActivity : AppCompatActivity() {
 
         replaceFragment(SurroundingsFragment())
 
-        var binding = DataBindingUtil.setContentView<ActivityMainBinding>(
+        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(
                 this, R.layout.activity_main)
 
         binding.bottomNavigation.setOnNavigationItemSelectedListener {
@@ -88,5 +107,10 @@ class MainActivity : AppCompatActivity() {
         val fragmentTransaction: FragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.frameLayout, fragment)
         fragmentTransaction.commit()
+    }
+
+    fun saveUserInfo(id: String) {
+        GlobalApplication.prefs.userId = id
+        mSocket.emit("login", id)
     }
 }

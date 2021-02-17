@@ -8,7 +8,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.example.together.data.User
 import com.example.together.databinding.ActivityLoginBinding
+import com.example.together.utils.Connection
 import com.kakao.sdk.auth.LoginClient
 import com.kakao.sdk.auth.model.OAuthToken
 import io.socket.client.IO
@@ -21,10 +23,11 @@ import java.net.URISyntaxException
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
 
-    val Tag = "LoginActivity"
+    val TAG = "LoginActivity"
     lateinit var mSocket: Socket
     lateinit var userName: String
     var users: Array<String> = arrayOf()
+    lateinit var mUser: User
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,19 +42,19 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        mSocket = IO.socket(serverAddr)!!
         try {
-            mSocket = IO.socket(serverAddr)
-
             // socket과 server 연결
             // server의 io.on() 실행
             mSocket.connect()
 
-            Log.d(Tag, "서버에 연결 완료")
+            Log.d("onConnect", "서버에 연결 완료")
         } catch (e: URISyntaxException) {
-            Log.e(Tag, e.reason)
+            Log.e("onConnect", e.reason)
         }
 
-        mSocket.on(Socket.EVENT_CONNECT, onConnect);
+//        mSocket.on(Socket.EVENT_CONNECT, onLogin)
+        mSocket.on("login", onLogin)
         mSocket.on("newUser", onNewUser)
         mSocket.on("myMsg", onMyMessage)
         mSocket.on("newMsg", onNewMessage)
@@ -60,6 +63,7 @@ class LoginActivity : AppCompatActivity() {
         val bLogin = binding.bLogin
         bLogin.setOnClickListener {
             mSocket.emit("say", "안녕")
+            Log.i("Tag", "서버에 채팅 전송됨")
         }
 
         val bKakao = binding.bKakao
@@ -74,6 +78,9 @@ class LoginActivity : AppCompatActivity() {
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
 
+                    Connection.mSocket.emit("login", token.accessToken)
+                    Log.d("onConnect", "Socket is connected with ${token.accessToken}")
+
                     val pref = getSharedPreferences("myInfo", Context.MODE_PRIVATE)
                     val editor: SharedPreferences.Editor = pref.edit()
                     editor.putString("token", token.accessToken)
@@ -82,6 +89,10 @@ class LoginActivity : AppCompatActivity() {
                 else {
                     Log.e(ContentValues.TAG, "토큰 생성 실패")
                 }
+            }
+
+            binding.tvJoin.setOnClickListener {
+                // TODO: 회원가입 페이지로 이동
             }
 
             // 카카오톡이 설치되어 있으면 카카오톡으로 로그인, 아니면 카카오계정으로 로그인
@@ -95,9 +106,9 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    val onConnect: Emitter.Listener = Emitter.Listener {
-        mSocket.emit("login", userName)
-        Log.d(Tag, "Socket is connected with $userName")
+    val onLogin: Emitter.Listener = Emitter.Listener {
+        Connection.mSocket.emit("login", userName)
+        Log.d("onConnect", "Socket is connected with ${userName}")
     }
 
     val onMyMessage = Emitter.Listener {
@@ -119,25 +130,26 @@ class LoginActivity : AppCompatActivity() {
             Log.d("WHO IS ON NOW", jsonObj.getString("whoIsOn"))
 
             //Disconnect socket!
-            mSocket.disconnect()
+            Connection.mSocket.disconnect()
         } catch (e: JSONException) {
             e.printStackTrace()
         }
+
     }
 
     val onMessageRecieved: Emitter.Listener = Emitter.Listener {
         try {
             val receivedData: Any = it[0]
-            Log.d(Tag, receivedData.toString())
+            Log.d("onMessageReceived", receivedData.toString())
 
         } catch (e: Exception) {
-            Log.e(Tag, "error", e)
+            Log.e("onMessageReceived", "error", e)
         }
     }
 
     val onNewUser: Emitter.Listener = Emitter.Listener {
 
-        var data = it[0]
+        val data = it[0]
         if (data != null) {
 //            users = data.split(",").toTypedArray() // 파싱
 //            for (a: String in users) {
@@ -149,12 +161,5 @@ class LoginActivity : AppCompatActivity() {
             Log.e("error", "Something went wrong")
         }
 
-    }
-
-    override fun onStop() {
-        super.onStop()
-    }
-    override fun onDestroy() {
-        super.onDestroy()
     }
 }

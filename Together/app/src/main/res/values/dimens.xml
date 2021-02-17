@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="layout_margin">16dp</dimen>
+    <dimen name="login_small_text">12sp</dimen>
+    <dimen name="login_small_margin_12">12dp</dimen>
 </resources>

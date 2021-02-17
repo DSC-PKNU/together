@@ -11,7 +11,7 @@ var db = mysql.createConnection({
     password: '0000',
     database: 'together_db',
 });
-db.connect();
+// db.connect();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
