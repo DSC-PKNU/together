@@ -13,9 +13,6 @@ var db = mysql.createConnection({
 });
 // db.connect();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
 var app = express();
 var socketio = require('socket.io');
 
@@ -27,24 +24,6 @@ var server = app.listen(3001, () => {
 var io = socketio.listen(server)
 
 var whoIsOn = [];
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-    next(createError(404));
-});
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -59,46 +38,77 @@ app.use(function (err, req, res, next) {
 
 module.exports = app;
 
-io.on('connection', function (socket) {
-    var nickname = ''
+let curUsers = [
+    {
+        id: 1,
+        name: 'alice',
+    }, {
+        id: 2,
+        name: 'bek',
+    }, {
+        id: 3,
+        name: 'chris',
+    }
+]
 
-    // 'login' 이벤트를 발생시킨 경우
-    socket.on('login', function (data) {
-        console.log(`${data} 입장 ------------------------`)
-        whoIsOn.push(data)
-        nickname = data
-
-        var whoIsOnJson = `${whoIsOn}`
-        console.log(whoIsOnJson)
-
-        db.query('SELECT * FROM user', function (error, results) {
-            console.log(results);
-            
-            
-            io.emit('newUser', results)
-        });
-
-        // 서버에 연결된 모든 소켓에 보냄
-        // io.emit('newUser', whoIsOnJson)
-    })
-
-    socket.on('say', function (data) {
-        console.log(`${nickname} : ${data}`)
-
-        socket.emit('myMsg', data)
-        socket.broadcast.emit('newMsg', data)  // 현재 소켓 이외의 소켓에 보냄
-    })
-
-    socket.on('disconnect', function() {
-        console.log(`${nickname} 퇴장 -----------------------`)
-    })
-
-    socket.on('logout', function() {
-        whoIsOn.splice(whoIsOn.indexOf(nickname), 1)
-        var data = {
-            whoIsOn: whoIsOn,
-            disconnected: nickname
-        }
-        socket.emit('logout', data)
-    })
+app.get('/users', (req, res) => {
+    console.log('who get in here /users');
+    res.json(curUsers)
+});
+app.post('/post', (req, res) => {
+    console.log('who get in here post /usres');
+    var inputData;
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+    req.on('end', () => {
+        console.log("user_id: " + inputData.user_id + ", name: " + inputData.name);
+    });
+    res.write("OK!");
+    res.end();
 })
+
+
+// io.on('connection', function (socket) {
+//     var nickname = ''
+
+//     // 'login' 이벤트를 발생시킨 경우
+//     socket.on('login', function (data) {
+//         console.log(`${data} 입장 ------------------------`)
+//         whoIsOn.push(data)
+//         nickname = data
+
+//         var whoIsOnJson = `${whoIsOn}`
+//         console.log(whoIsOnJson)
+
+//         db.query(`SELECT * FROM user`, function(error, results) {
+//             console.log(results);
+            
+            
+//             io.emit('newUser', results)
+//         });
+
+//         // 서버에 연결된 모든 소켓에 보냄
+//         // io.emit('newUser', whoIsOnJson)
+//     })
+
+//     socket.on('say', function (data) {
+//         console.log(`${nickname} : ${data}`)
+
+//         socket.emit('myMsg', data)
+//         socket.broadcast.emit('newMsg', data)  // 현재 소켓 이외의 소켓에 보냄
+//     })
+
+//     socket.on('disconnect', function() {
+//         console.log(`${nickname} 퇴장 -----------------------`)
+//     })
+
+//     socket.on('logout', function() {
+//         whoIsOn.splice(whoIsOn.indexOf(nickname), 1)
+//         var data = {
+//             whoIsOn: whoIsOn,
+//             disconnected: nickname
+//         }
+//         socket.emit('logout', data)
+//     })
+// })
