@@ -1,15 +1,19 @@
-package com.example.together
+package com.example.together.login
 
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.example.together.MainActivity
+import com.example.together.R
 import com.example.together.data.User
 import com.example.together.databinding.ActivityLoginBinding
+import com.example.together.serverAddr
 import com.example.together.utils.Connection
 import com.kakao.sdk.auth.LoginClient
 import com.kakao.sdk.auth.model.OAuthToken
@@ -91,10 +95,6 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
 
-            binding.tvJoin.setOnClickListener {
-                // TODO: 회원가입 페이지로 이동
-            }
-
             // 카카오톡이 설치되어 있으면 카카오톡으로 로그인, 아니면 카카오계정으로 로그인
             if (LoginClient.instance.isKakaoTalkLoginAvailable(this)) {
                 LoginClient.instance.loginWithKakaoTalk(this, callback = callback)
@@ -103,6 +103,11 @@ class LoginActivity : AppCompatActivity() {
                 LoginClient.instance.loginWithKakaoAccount(this, callback = callback)
                 Log.i("로그인", "카카오톡 로그인으로 이동")
             }
+        }
+
+        binding.tvJoin.setOnClickListener {
+            val intent = Intent(this, JoinActivity::class.java)
+            startActivity(intent)
         }
     }
 

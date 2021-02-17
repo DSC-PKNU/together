@@ -16,7 +16,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.example.together.EmergencyCallSetting;
-import com.example.together.LoginActivity;
+import com.example.together.login.LoginActivity;
 import com.example.together.R;
 import com.kakao.sdk.auth.LoginClient;
 import com.kakao.sdk.user.UserApiClient;
