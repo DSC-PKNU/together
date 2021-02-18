@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/addCall"
+        android:title="전화번호 추가" />
+    <item
+        android:id="@+id/deleteCall"
+        android:title="전화번호 삭제" />
+</menu>

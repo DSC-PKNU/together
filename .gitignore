@@ -146,4 +146,7 @@ fabric.properties
 # AndroidManifest for naver map client ID
 AndroidManifest.xml
 
+# Kakao native app key
+GlobalApplication.kt
+
 # End of https://www.toptal.com/developers/gitignore/api/androidstudio

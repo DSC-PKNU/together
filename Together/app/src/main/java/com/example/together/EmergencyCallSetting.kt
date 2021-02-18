@@ -9,11 +9,20 @@ import android.database.Cursor
 import androidx.core.content.ContextCompat
 import android.os.Bundle
 import android.provider.ContactsContract
+<<<<<<< HEAD
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+=======
+import android.view.*
+import android.widget.Button
+import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.NavigationUI
+>>>>>>> b80d56b9bc2ac69581ddde96819450545f0e76af
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.emergency_call_list.view.*
@@ -41,6 +50,11 @@ class EmergencyCallSetting : Fragment() {
         super.onCreate(savedInstanceState)
 
         val view = inflater.inflate(R.layout.emergency_call_setting, container, false)
+<<<<<<< HEAD
+=======
+        setHasOptionsMenu(true)
+
+>>>>>>> b80d56b9bc2ac69581ddde96819450545f0e76af
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
 
         recyclerView.layoutManager = LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false)
@@ -89,5 +103,18 @@ class EmergencyCallSetting : Fragment() {
 
 
         return view;
+<<<<<<< HEAD
+=======
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.call_menu,menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return NavigationUI.onNavDestinationSelected(item,requireView()!!.findNavController())
+                ||super.onOptionsItemSelected(item)
+>>>>>>> b80d56b9bc2ac69581ddde96819450545f0e76af
     }
 }
