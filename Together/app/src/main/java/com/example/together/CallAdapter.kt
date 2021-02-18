@@ -27,6 +27,15 @@ class CallAdapter (val data: ArrayList<Contact>, val context: Context): Recycler
 
     }
 
+    fun addItem(Item: Contact){
+        data.add(Item)
+    }
+
+    fun ItemCount() : Int{
+        return data.size
+    }
+
+
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val name = itemView.findViewById<TextView>(R.id.name)
         val phone = itemView.findViewById<TextView>(R.id.phone)

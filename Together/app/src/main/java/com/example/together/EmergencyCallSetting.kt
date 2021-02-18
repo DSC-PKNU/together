@@ -1,6 +1,5 @@
 package com.example.together
 
-import CallAdapter
 import Contact
 import android.app.Activity
 import android.content.ContentUris
@@ -85,6 +84,7 @@ class EmergencyCallSetting : Fragment() {
                             var Image = cursor.getInt(2)
 
                             cursor.close()
+
 
                             (data as MutableList<Contact>).add(Contact(1, Name, Phone, Image))
                         }
