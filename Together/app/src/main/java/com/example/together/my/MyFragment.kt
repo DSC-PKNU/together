@@ -35,6 +35,8 @@ import java.net.URL
 import java.util.*
 
 class MyFragment : Fragment() {
+    val TAG = "MyFragment"
+
     var myListItem: ArrayList<String>? = null
     var logoutListItem: ArrayList<String>? = null
 
@@ -78,18 +80,27 @@ class MyFragment : Fragment() {
             val dialog = LogoutDialogFragment()
             //                dialog.show(getFragmentManager(), "로그아웃");
             // TODO: dialog 오류 해결
-            UserApiClient.instance.unlink { error: Throwable? ->
-                if (error != null) {
-                    Log.e(ContentValues.TAG, "로그아웃(연결 끊기) 실패.", error)
-                } else {
-                    Log.i(ContentValues.TAG, "로그아웃(연결 끊기) 성공. SDK에서 토큰 삭제됨")
-                    val editor = pref.edit()
-                    editor.remove("token")
-                    editor.apply()
-                    val intent = Intent(activity, LoginActivity::class.java)
-                    startActivity(intent)
-                    Toast.makeText(activity, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
+
+            if (GlobalApplication.prefs.kakao) {
+                UserApiClient.instance.unlink { error: Throwable? ->
+                    if (error != null) {
+                        Log.e(TAG, "로그아웃(연결 끊기) 실패.", error)
+                    } else {
+                        Log.i(TAG, "로그아웃(연결 끊기) 성공. SDK에서 토큰 삭제됨")
+                        val editor = pref.edit()
+                        editor.remove("token")
+                        editor.apply()
+                        val intent = Intent(activity, LoginActivity::class.java)
+                        startActivity(intent)
+                        Toast.makeText(activity, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
+            } else {
+                GlobalApplication.prefs.userId = null
+
+                val intent = Intent(activity, LoginActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
             }
         }
 
