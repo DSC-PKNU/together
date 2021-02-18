@@ -96,7 +96,7 @@ class JoinActivity : AppCompatActivity() {
     }
 
     fun register() {
-        val url = "/post"
+        val url = "/join"
         val data = JSONObject()
         data.accumulate("user_id", binding.etId.editText!!.text.toString())
         data.accumulate("user_pw", binding.etPassword.editText!!.text.toString())

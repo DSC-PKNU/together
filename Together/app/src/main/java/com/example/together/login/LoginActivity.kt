@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -14,20 +13,29 @@ import com.example.together.R
 import com.example.together.data.User
 import com.example.together.databinding.ActivityLoginBinding
 import com.example.together.serverAddr
-import com.example.together.utils.Connection
 import com.kakao.sdk.auth.LoginClient
 import com.kakao.sdk.auth.model.OAuthToken
+import com.kakao.sdk.user.UserApiClient
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.*
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
 import java.net.URISyntaxException
+import java.net.URL
+import java.util.*
 
 class LoginActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityLoginBinding
-
     val TAG = "LoginActivity"
+
+    private lateinit var binding: ActivityLoginBinding
+    private lateinit var mContext: Context
+
     lateinit var mSocket: Socket
     lateinit var userName: String
     var users: Array<String> = arrayOf()
@@ -36,6 +44,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
+        mContext = applicationContext
 
         userName = "현재 사용자"
 
@@ -78,17 +87,26 @@ class LoginActivity : AppCompatActivity() {
                     Log.e(ContentValues.TAG, "로그인 실패", error)
                 }
                 else if (token != null) {
-                    Log.i(ContentValues.TAG, "로그인 성공 ${token.accessToken}")
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-
-                    Connection.mSocket.emit("login", token.accessToken)
-                    Log.d("onConnect", "Socket is connected with ${token.accessToken}")
+                    Log.i(TAG, "로그인 성공 ${token.accessToken}")
 
                     val pref = getSharedPreferences("myInfo", Context.MODE_PRIVATE)
                     val editor: SharedPreferences.Editor = pref.edit()
                     editor.putString("token", token.accessToken)
                     editor.apply()
+
+                    // 사용자 정보 요청
+                    UserApiClient.instance.me { user, error ->
+                        if (error != null) {
+                            Log.e(com.example.together.TAG, "사용자 정보 요청 실패", error)
+                        } else if (user != null) {
+                            Log.i(com.example.together.TAG, "사용자 정보 요청 성공" +
+                                    "\n회원번호: ${user.id}" +
+                                    "\n이메일: ${user.kakaoAccount?.email}" +
+                                    "\n닉네임: ${user.kakaoAccount?.profile?.nickname}")
+
+                            register(user.id.toString(), user.kakaoAccount?.profile!!.nickname)
+                        }
+                    }
                 }
                 else {
                     Log.e(ContentValues.TAG, "토큰 생성 실패")
@@ -112,7 +130,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     val onLogin: Emitter.Listener = Emitter.Listener {
-        Connection.mSocket.emit("login", userName)
+        mSocket.emit("login", userName)
         Log.d("onConnect", "Socket is connected with ${userName}")
     }
 
@@ -135,7 +153,7 @@ class LoginActivity : AppCompatActivity() {
             Log.d("WHO IS ON NOW", jsonObj.getString("whoIsOn"))
 
             //Disconnect socket!
-            Connection.mSocket.disconnect()
+            mSocket.disconnect()
         } catch (e: JSONException) {
             e.printStackTrace()
         }
@@ -166,5 +184,68 @@ class LoginActivity : AppCompatActivity() {
             Log.e("error", "Something went wrong")
         }
 
+    }
+
+    fun register(id: String, name: String) {
+        val url = "/join"
+//        val url = "/join_with_kakao"
+        val data = JSONObject()
+        data.accumulate("user_id", id)
+        data.accumulate("user_pw", "default")
+        data.accumulate("name", name)
+
+        GlobalScope.launch {
+            var con: HttpURLConnection? = null
+            var reader: BufferedReader? = null
+            try {
+                val url = URL(serverAddr + url)
+                con = url.openConnection() as HttpURLConnection?
+                con!!.requestMethod = "POST"
+                con.setRequestProperty("Cache-Control", "no-cache")
+                con.setRequestProperty("content-Type", "application/json")
+                con.setRequestProperty("Accept", "text/html")
+                con.doOutput = true
+                con.doInput = true
+                con!!.connect()
+
+                val outStream: OutputStream = con.outputStream
+                val writer: BufferedWriter = BufferedWriter(OutputStreamWriter(outStream))
+                writer.write(data.toString())
+                writer.flush()
+                writer.close()
+
+                val stream: InputStream = con.inputStream
+                reader = BufferedReader(InputStreamReader(stream))
+                val buffer = StringBuffer()
+
+                var line: String? = reader.readLine()
+                while (line != null) {
+                    buffer.append(line)
+                    line = reader.readLine()
+                }
+
+                Log.d("Join Response", buffer.toString())
+
+                return@launch
+            } catch (e: MalformedURLException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } finally {
+                if (con != null) {
+                    con.disconnect()
+                }
+                try {
+                    if (reader != null) {
+                        reader.close()
+                    }
+
+                    val intent = Intent(applicationContext, MainActivity::class.java)
+                    startActivity(intent)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 }
