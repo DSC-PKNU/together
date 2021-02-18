@@ -15,6 +15,7 @@ db.connect();
 
 var app = express();
 var socketio = require('socket.io');
+const { stat } = require('fs');
 
 var server = app.listen(3001, () => {
     console.log('Listening at port number 3001')
@@ -57,28 +58,36 @@ app.get('/users', (req, res) => {
     res.json(curUsers)
 });
 
-// app.post('/dup_check', (req, res) => {
-//     console.log('who get in here post /dup_check');
-//     var inputData;
-//     var user_id
-//     req.on('data', (data) => {
-//         inputData = JSON.parse(data);
-//     });
-//     req.on('end', () => {
-//         user_id = inputData.user_id
-//         console.log("user_id: " + user_id);
+app.post('/dup_check', (req, res) => {
+    console.log('who get in here post /dup_check');
+    var inputData;
+    var user_id;
+    var status = false;
 
-//         db.query(`SELECT id FROM user WHERE id=?`, [user_id], function(error, results) {
-//             console.log(results)
-//             if (results.length == 0) {
-//                 console.log("results의 길이는 0")
-//             }
-//         });
-//     });
-    
-//     res.write("OK!");
-//     res.end();
-// })
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+    req.on('end', () => {
+        user_id = inputData.user_id
+        console.log("user_id: " + user_id);
+
+        db.query(`SELECT id FROM user WHERE id=?`, [user_id], function(error, results) {
+            console.log(results)
+            if (results.length == 0) {
+                console.log("results의 길이는 0");
+                status = true;
+                
+                res.write("1");
+                console.log("send ok sign");
+                res.end();
+            } else {
+                res.write("-1");
+                console.log("send dup sign");
+                res.end();
+            }
+        });
+    });
+})
 
 app.post('/join', (req, res) => {
     console.log('who get in here post /usres');

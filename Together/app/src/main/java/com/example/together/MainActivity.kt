@@ -15,10 +15,8 @@ import io.socket.client.Socket
 import java.net.URISyntaxException
 import java.util.*
 
-const val TAG = "MainActivity"
-
 class MainActivity : AppCompatActivity() {
-
+    val TAG = "MainActivity"
     lateinit var mSocket: Socket
 
     override fun onCreate(savedInstanceState: Bundle?) {

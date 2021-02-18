@@ -10,8 +10,6 @@ import androidx.databinding.DataBindingUtil
 import com.example.together.R
 import com.example.together.databinding.ActivityJoinBinding
 import com.example.together.serverAddr
-import com.google.gson.JsonObject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -22,6 +20,8 @@ import java.net.URL
 
 class JoinActivity : AppCompatActivity() {
     private lateinit var binding: ActivityJoinBinding
+    var status = false
+    var dupCheck = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +29,8 @@ class JoinActivity : AppCompatActivity() {
 
         binding.etId.editText!!.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
+                dupCheck = false
+
                 if (checkLen()) {
                     binding.etId.error = "아이디 중복확인"
                 } else {
@@ -69,12 +71,15 @@ class JoinActivity : AppCompatActivity() {
         })
 
         binding.bJoin.setOnClickListener {
-            if (binding.etId.editText!!.text.toString() != "" &&
+            if (!dupCheck) {
+                val dialog = DupFragment()
+                dialog.show(supportFragmentManager, "duplicate check")
+            }
+            else if (binding.etId.editText!!.text.toString() != "" &&
                     binding.etPassword.editText!!.text.toString() != "" &&
-                    binding.etName.editText!!.text.toString() != "") {
+                    binding.etName.editText!!.text.toString() != "" && dupCheck) {
                 register()
                 Toast.makeText(this, "회원가입이 완료되었습니다.", Toast.LENGTH_LONG).show()
-
                 onBackPressed()
             }
         }
@@ -85,13 +90,74 @@ class JoinActivity : AppCompatActivity() {
     }
 
     fun checkDup(): Boolean {
-        // TODO: server
-        return true
+        val url = "/dup_check"
+        val data = JSONObject()
+        data.accumulate("user_id", binding.etId.editText!!.text.toString())
+
+        dupCheck = true
+
+        GlobalScope.launch {
+            var con: HttpURLConnection? = null
+            var reader: BufferedReader? = null
+
+            try {
+                val url = URL(serverAddr + url)
+                con = url.openConnection() as HttpURLConnection?
+                con!!.requestMethod = "POST"
+                con.setRequestProperty("Cache-Control", "no-cache")
+                con.setRequestProperty("content-Type", "application/json")
+                con.setRequestProperty("Accept", "text/html")
+                con.doOutput = true
+                con.doInput = true
+                con!!.connect()
+
+                val outStream: OutputStream = con.outputStream
+                val writer: BufferedWriter = BufferedWriter(OutputStreamWriter(outStream))
+                writer.write(data.toString())
+                writer.flush()
+                writer.close()
+
+                val stream: InputStream = con.inputStream
+                reader = BufferedReader(InputStreamReader(stream))
+                val buffer = StringBuffer()
+
+                var line: String? = reader.readLine()
+                while (line != null) {
+                    buffer.append(line)
+                    line = reader.readLine()
+                }
+
+                Log.d("Join Response", buffer.toString())
+                if (buffer.toString() == "1") {
+                    Log.d("JoinActivity", "response: 1")
+                    status = true
+                }
+
+                return@launch
+            } catch (e: MalformedURLException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } finally {
+                if (con != null) {
+                    con.disconnect()
+                }
+                try {
+                    if (reader != null) {
+                        reader.close()
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        return status
     }
 
     fun checkValid() {
         if (checkLen() && checkDup()) binding.etId.error = null
-        else if (checkLen() && !checkDup()) binding.etId.error = "아이디 중복 확인"
+        else if (checkLen() && !checkDup()) binding.etId.error = "중복된 아이디입니다"
         else binding.etId.error = "아이디 중복 확인\n6자 이상의 영문 혹은 영문과 숫자를 조합"
     }
 

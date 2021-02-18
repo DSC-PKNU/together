@@ -28,7 +28,6 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URISyntaxException
 import java.net.URL
-import java.util.*
 
 class LoginActivity : AppCompatActivity() {
     val TAG = "LoginActivity"
@@ -97,9 +96,9 @@ class LoginActivity : AppCompatActivity() {
                     // 사용자 정보 요청
                     UserApiClient.instance.me { user, error ->
                         if (error != null) {
-                            Log.e(com.example.together.TAG, "사용자 정보 요청 실패", error)
+                            Log.e(TAG, "사용자 정보 요청 실패", error)
                         } else if (user != null) {
-                            Log.i(com.example.together.TAG, "사용자 정보 요청 성공" +
+                            Log.i(TAG, "사용자 정보 요청 성공" +
                                     "\n회원번호: ${user.id}" +
                                     "\n이메일: ${user.kakaoAccount?.email}" +
                                     "\n닉네임: ${user.kakaoAccount?.profile?.nickname}")
@@ -188,7 +187,6 @@ class LoginActivity : AppCompatActivity() {
 
     fun register(id: String, name: String) {
         val url = "/join"
-//        val url = "/join_with_kakao"
         val data = JSONObject()
         data.accumulate("user_id", id)
         data.accumulate("user_pw", "default")
