@@ -39,23 +39,10 @@ app.use(function (err, req, res, next) {
 
 module.exports = app;
 
-let curUsers = [
-    {
-        id: 1,
-        name: 'alice',
-    }, {
-        id: 2,
-        name: 'bek',
-    }, {
-        id: 3,
-        name: 'chris',
-    }
-]
-
 
 app.get('/users', (req, res) => {
     console.log('who get in here /users');
-    res.json(curUsers)
+    res.json("get some data")
 });
 
 app.post('/dup_check', (req, res) => {
@@ -149,6 +136,26 @@ app.post('/login', (req, res) => {
     });
     
     
+})
+
+app.post('/cur_user', (req, res) => {
+    console.log('who get in here post /cur_user');
+    var inputData;
+    var user_id
+    req.on('data', (data) => {
+        inputData = JSON.parse(data);
+    });
+    req.on('end', () => {
+        user_id = inputData.user_id
+        console.log("user_id: " + user_id);
+
+        db.query(`SELECT * FROM user WHERE id=?`, [user_id], function(error, results) {
+            console.log(results);
+
+            res.write(results[0].name);
+            res.end();
+        });
+    });
 })
 
 

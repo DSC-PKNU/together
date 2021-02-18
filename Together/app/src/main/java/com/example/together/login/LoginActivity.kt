@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.example.together.GlobalApplication
 import com.example.together.MainActivity
 import com.example.together.R
 import com.example.together.databinding.ActivityLoginBinding
@@ -33,21 +34,16 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var mContext: Context
 
     lateinit var mSocket: Socket
-    lateinit var userName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
         mContext = applicationContext
 
-        userName = "현재 사용자"
-
-        val preferences = getSharedPreferences("myInfo", Context.MODE_PRIVATE)
-        val prefData = preferences.getString("token", null)
-        if (prefData != null) {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
+//        if (GlobalApplication.prefs.userId != null) {
+//            val intent = Intent(this, MainActivity::class.java)
+//            startActivity(intent)
+//        }
 
         mSocket = IO.socket(serverAddr)!!
         try {
@@ -96,7 +92,10 @@ class LoginActivity : AppCompatActivity() {
                             if (checkDup(user.id.toString())) {
                                 register(user.id.toString(), user.kakaoAccount?.profile!!.nickname)
                             } else {
-
+                                GlobalApplication.prefs.userId = user.id.toString()
+                                GlobalApplication.prefs.kakao = true
+                                val intent = Intent(applicationContext, MainActivity::class.java)
+                                startActivity(intent)
                             }
                         }
                     }
@@ -308,6 +307,8 @@ class LoginActivity : AppCompatActivity() {
                     }
 
                     if (status) {
+                        GlobalApplication.prefs.userId = id
+                        GlobalApplication.prefs.kakao = false
                         val intent = Intent(applicationContext, MainActivity::class.java)
                         startActivity(intent)
                     } else {
