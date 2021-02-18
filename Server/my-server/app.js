@@ -123,9 +123,9 @@ app.post('/join', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
-    console.log('who get in here post /usres');
+    console.log('who get in here post /login');
     var inputData;
-    var user_id, user_pw, user_name
+    var user_id, user_pw
     req.on('data', (data) => {
         inputData = JSON.parse(data);
     });
@@ -133,19 +133,22 @@ app.post('/login', (req, res) => {
         user_id = inputData.user_id
         user_pw = inputData.user_pw
         user_name = inputData.name
-        console.log("user_id: " + user_id + ", user_pw: " + user_pw + ", name: " + user_name);
+        console.log("user_id: " + user_id + ", user_pw: " + user_pw);
 
-        db.query(`INSERT INTO user (id, password, name) VALUES(?, ?, ?)`, [user_id, user_pw, user_name], function(error, results) {
+        db.query(`SELECT * FROM user WHERE id=? AND password=?`, [user_id, user_pw], function(error, results) {
             console.log(results);
-        });
 
-        db.query(`SELECT * FROM user`, function(error, results) {
-            console.log(results);
+            if (results.length == 0) {
+                res.write("-1");
+                res.end();
+            } else {
+                res.write("1");
+                res.end();
+            }
         });
     });
     
-    res.write("OK!");
-    res.end();
+    
 })
 
 
