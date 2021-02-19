@@ -110,12 +110,12 @@ class MainActivity : AppCompatActivity() {
        fabCall.setOnClickListener{
            var intent = Intent(Intent.ACTION_DIAL)
 
-           val phoneNo: String = data.get(0).phone
+//           val phoneNo: String = data.get(0).phone
            val sms: String = "보호자가 도움을 요청하였습니다."
 
            try {
                val smsManager: SmsManager = SmsManager.getDefault()
-               smsManager.sendTextMessage(phoneNo, null, sms, null, null)
+//               smsManager.sendTextMessage(phoneNo, null, sms, null, null)
                Toast.makeText(applicationContext, "전송 완료", Toast.LENGTH_LONG).show()
            } catch (e: Exception) {
                Toast.makeText(applicationContext, "SMS failed", Toast.LENGTH_LONG).show()
