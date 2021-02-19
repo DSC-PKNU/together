@@ -1,5 +1,7 @@
 package com.example.together
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +14,7 @@ import com.kakao.sdk.auth.LoginClient
 import com.kakao.sdk.user.UserApiClient
 import io.socket.client.IO
 import io.socket.client.Socket
+import kotlinx.android.synthetic.main.activity_main.*
 import java.net.URISyntaxException
 import java.util.*
 
@@ -43,7 +46,7 @@ class MainActivity : AppCompatActivity() {
                     Log.i(TAG, "사용자 정보 요청 성공" +
                             "\n회원번호: ${user.id}" +
                             "\n이메일: ${user.kakaoAccount?.email}" +
-                         "\n닉네임: ${user.kakaoAccount?.profile?.nickname}")
+                            "\n닉네임: ${user.kakaoAccount?.profile?.nickname}")
 
                     saveUserInfo(user.kakaoAccount?.email.toString())
                 } else if (user.kakaoAccount?.emailNeedsAgreement == false) {
@@ -99,6 +102,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+
+       fabCall.setOnClickListener{
+           var intent = Intent(Intent.ACTION_DIAL)
+           intent.data = Uri.parse("tel:112")
+           if(intent.resolveActivity(packageManager) != null){
+               startActivity(intent)
+           }
+       }
+
     }
 
 
