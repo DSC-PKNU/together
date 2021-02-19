@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.emergency_call_list.view.*
 import java.util.*
 
-class EmergencyCallSetting : Fragment() {
+class EmergencyCallSetting : Activity() {
 
     var data= arrayListOf<Contact>(
             Contact(1,
@@ -41,28 +41,23 @@ class EmergencyCallSetting : Fragment() {
     )
 
 
-
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
+            setContentView(R.layout.emergency_call_setting)
 
-            val view = inflater.inflate(R.layout.emergency_call_setting, container, false)
-
-            setHasOptionsMenu(true)
-
-            val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
-
-            recyclerView.layoutManager = LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false)
-            recyclerView.adapter = CallAdapter(data, view.context)
+            val adapter =CallAdapter(data,this)
+            //val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+            //recyclerView.adapter = CallAdapter(data,this)
             //val adapter=recyclerView.adapter
 
-            (recyclerView.adapter as CallAdapter).setItemClickListener(object :  CallAdapter.OnItemClickListener {
+            adapter.setItemClickListener(object :  CallAdapter.OnItemClickListener {
                 override fun onClick(v: View, position: Int) {
                     data.removeAt(position)
-                    (recyclerView.adapter as CallAdapter).notifyDataSetChanged()
+                    adapter.notifyDataSetChanged()
                 }
             })
 
-        view.findViewById<Button>(R.id.add_number).setOnClickListener {
+        findViewById<Button>(R.id.add_number).setOnClickListener {
                 val contactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
                 startActivityForResult(contactIntent, 10)
 
@@ -70,7 +65,7 @@ class EmergencyCallSetting : Fragment() {
                     super.onActivityResult(requestCode, resultCode, data)
                     if (resultCode == Activity.RESULT_OK) {
 
-                        val context = this.getContext()
+                        val context = this
                         if (context != null) {
                             val contentResolver: ContentResolver = context.contentResolver
 
@@ -94,28 +89,74 @@ class EmergencyCallSetting : Fragment() {
                                 cursor.close()
 
 
-                                (recyclerView.adapter as CallAdapter).addItem(Contact((recyclerView.adapter as CallAdapter).getItemCount() + 1, Name, Phone, Image))
-                                (recyclerView.adapter as CallAdapter).notifyDataSetChanged()
+                                adapter.addItem(Contact(adapter.getItemCount() + 1, Name, Phone, Image))
+                                adapter.notifyDataSetChanged()
                             }
 
                         }
                     }
 
                 }
-                getActivity()?.finish();
+                finish();
         }
 
 
-        return view;
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.call_menu,menu)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val menuInflater = menuInflater
+        menuInflater.inflate(R.menu.call_menu, menu)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return NavigationUI.onNavDestinationSelected(item,requireView()!!.findNavController())
-                ||super.onOptionsItemSelected(item)
+
+        when(item?.itemId) {
+            R.id.addCall -> {
+                val adapter =CallAdapter(data,this)
+
+                val contactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+                startActivityForResult(contactIntent, 10)
+
+                fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+                    super.onActivityResult(requestCode, resultCode, data)
+                    if (resultCode == Activity.RESULT_OK) {
+
+                        val context = this
+                        if (context != null) {
+                            val contentResolver: ContentResolver = context.contentResolver
+
+                            val listUrl = ContactsContract.Contacts.CONTENT_URI
+                            val proj = arrayOf(
+                                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                                    ContactsContract.CommonDataKinds.Phone.PHOTO_ID
+                            )
+
+
+                            val cursor = contentResolver.query(listUrl, proj, null, null, null)
+
+                            if (cursor != null) {
+
+                                cursor.moveToFirst();
+                                var Name = cursor.getString(0)
+                                var Phone = cursor.getString(1)
+                                var Image = cursor.getInt(2)
+
+                                cursor.close()
+
+
+                                adapter.addItem(Contact(adapter.getItemCount() + 1, Name, Phone, Image))
+                                adapter.notifyDataSetChanged()
+                            }
+
+                        }
+                    }
+
+                }
+                finish();
+                return true}
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
