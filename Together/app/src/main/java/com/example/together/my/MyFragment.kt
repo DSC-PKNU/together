@@ -12,7 +12,6 @@ import android.widget.AdapterView.OnItemClickListener
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.example.together.EmergencyCallSetting
 import com.example.together.GlobalApplication
 import com.example.together.R
@@ -28,9 +27,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.io.*
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.OutputStream
+import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
-import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 
@@ -69,8 +70,7 @@ class MyFragment : Fragment() {
                     startActivity(callSettingIntent)
                 }
                 1 -> {
-                }
-                2 -> {
+                    startActivity(Intent(activity, ProtectorActivity::class.java))
                 }
                 else -> {
                 }
@@ -161,7 +161,6 @@ class MyFragment : Fragment() {
         logoutListItem = ArrayList()
         myListItem!!.add("긴급 전화번호 관리")
         myListItem!!.add("보호자 관리")
-        myListItem!!.add("피보호자 관리")
         logoutListItem!!.add("로그아웃")
     }
 

@@ -10,4 +10,5 @@
     <string name="find_id">아이디 찾기</string>
     <string name="find_pw">비밀번호 찾기</string>
     <string name="join">회원가입</string>
+    <string name="my_protector">내 보호자</string>
 </resources>

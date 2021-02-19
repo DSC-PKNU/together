@@ -40,10 +40,10 @@ class LoginActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
         mContext = applicationContext
 
-//        if (GlobalApplication.prefs.userId != null) {
-//            val intent = Intent(this, MainActivity::class.java)
-//            startActivity(intent)
-//        }
+        if (GlobalApplication.prefs.userId != null && GlobalApplication.prefs.userId != "") {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
 
         mSocket = IO.socket(serverAddr)!!
         try {
