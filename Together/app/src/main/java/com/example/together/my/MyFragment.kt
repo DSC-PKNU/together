@@ -66,7 +66,7 @@ class MyFragment : Fragment() {
                 0 -> {
 //                    Toast.makeText(context, "긴급전화번호 관리 페이지로 넘어갑니다",
 //                            Toast.LENGTH_LONG).show()
-//                    startActivity(Intent(activity, EmergencyCallSetting::class.java))
+                    startActivity(Intent(activity, EmergencyCallSetting::class.java))
                 }
                 1 -> {
                     startActivity(Intent(activity, ProtectorActivity::class.java))

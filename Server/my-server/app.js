@@ -77,7 +77,7 @@ app.post('/dup_check', (req, res) => {
 })
 
 app.post('/join', (req, res) => {
-    console.log('who get in here post /usres');
+    console.log('who get in here post /join');
     var inputData;
     var user_id, user_pw, user_name
     req.on('data', (data) => {
