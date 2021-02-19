@@ -14,6 +14,10 @@ class CallAdapter (val data: ArrayList<Contact>, val context: Context): Recycler
 
     override fun getItemCount(): Int = data.size
 
+    fun addItem(Item: Contact){
+        data.add(Item)
+    }
+
     override fun onBindViewHolder(p0: ViewHolder, p1: Int) {
         p0.name.text = data[p1].name
         p0.phone.text = data[p1].phone
@@ -26,18 +30,19 @@ class CallAdapter (val data: ArrayList<Contact>, val context: Context): Recycler
 
     }
 
-    fun addItem(Item: Contact){
-        data.add(Item)
-    }
-
-    fun ItemCount() : Int{
-        return data.size
-    }
-
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val name = itemView.findViewById<TextView>(R.id.name)
         val phone = itemView.findViewById<TextView>(R.id.phone)
         val profileImage = itemView.findViewById<ImageView>(R.id.profileImage)
+    }
+
+    interface OnItemClickListener {
+        fun onClick(v: View, position: Int)
+    }
+    private lateinit var itemClickListener : OnItemClickListener
+
+    fun setItemClickListener(itemClickListener: OnItemClickListener) {
+        this.itemClickListener = itemClickListener
     }
 }

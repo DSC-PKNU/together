@@ -1,17 +1,27 @@
 package com.example.together
 
 import android.app.Activity
-import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.Intent
+import android.content.Context
+import android.content.ContentResolver
+import android.database.Cursor
+import androidx.core.content.ContextCompat
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.view.*
+import android.telecom.Call
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import android.view.*
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.emergency_call_list.view.*
+import java.util.*
 
 class EmergencyCallSetting : Fragment() {
 
@@ -43,47 +53,56 @@ class EmergencyCallSetting : Fragment() {
 
             recyclerView.layoutManager = LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false)
             recyclerView.adapter = CallAdapter(data, view.context)
+            //val adapter=recyclerView.adapter
+
+            (recyclerView.adapter as CallAdapter).setItemClickListener(object :  CallAdapter.OnItemClickListener {
+                override fun onClick(v: View, position: Int) {
+                    data.removeAt(position)
+                    (recyclerView.adapter as CallAdapter).notifyDataSetChanged()
+                }
+            })
 
         view.findViewById<Button>(R.id.add_number).setOnClickListener {
-            val contactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
-            startActivityForResult(contactIntent, 10)
+                val contactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+                startActivityForResult(contactIntent, 10)
 
-            fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-                super.onActivityResult(requestCode, resultCode, data)
-                if (resultCode == Activity.RESULT_OK) {
+                fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+                    super.onActivityResult(requestCode, resultCode, data)
+                    if (resultCode == Activity.RESULT_OK) {
 
-                    val context=this.getContext()
-                    if (context!= null) {
-                    val contentResolver: ContentResolver = context.contentResolver
+                        val context = this.getContext()
+                        if (context != null) {
+                            val contentResolver: ContentResolver = context.contentResolver
 
-                    val listUrl = ContactsContract.Contacts.CONTENT_URI
-                    val proj = arrayOf(
-                            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                            ContactsContract.CommonDataKinds.Phone.NUMBER,
-                            ContactsContract.CommonDataKinds.Phone.PHOTO_ID
-                    )
-
-
-                        val cursor = contentResolver.query(listUrl, proj, null, null, null)
-
-                        if (cursor != null) {
-
-                            cursor.moveToFirst();
-                            var Name = cursor.getString(0)
-                            var Phone = cursor.getString(1)
-                            var Image = cursor.getInt(2)
-
-                            cursor.close()
+                            val listUrl = ContactsContract.Contacts.CONTENT_URI
+                            val proj = arrayOf(
+                                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                                    ContactsContract.CommonDataKinds.Phone.PHOTO_ID
+                            )
 
 
-                            (data as MutableList<Contact>).add(Contact(1, Name, Phone, Image))
+                            val cursor = contentResolver.query(listUrl, proj, null, null, null)
+
+                            if (cursor != null) {
+
+                                cursor.moveToFirst();
+                                var Name = cursor.getString(0)
+                                var Phone = cursor.getString(1)
+                                var Image = cursor.getInt(2)
+
+                                cursor.close()
+
+
+                                (recyclerView.adapter as CallAdapter).addItem(Contact((recyclerView.adapter as CallAdapter).getItemCount() + 1, Name, Phone, Image))
+                                (recyclerView.adapter as CallAdapter).notifyDataSetChanged()
+                            }
+
                         }
-
                     }
-                }
 
-            }
-            getActivity()?.finish();
+                }
+                getActivity()?.finish();
         }
 
 
