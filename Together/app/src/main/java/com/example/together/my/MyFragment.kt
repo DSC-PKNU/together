@@ -76,8 +76,8 @@ class MyFragment : Fragment() {
             }
         }
         lvLogout.onItemClickListener = OnItemClickListener { adapterView, view, i, l ->
-            val dialog = LogoutDialogFragment()
-            //                dialog.show(getFragmentManager(), "로그아웃");
+//            val dialog = LogoutDialogFragment()
+//            dialog.show(getFragmentManager(), "로그아웃");
             // TODO: dialog 오류 해결
 
             if (GlobalApplication.prefs.kakao) {
