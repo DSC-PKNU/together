@@ -3,7 +3,9 @@ package com.example.together
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.telephony.SmsManager
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -17,6 +19,7 @@ import io.socket.client.Socket
 import kotlinx.android.synthetic.main.activity_main.*
 import java.net.URISyntaxException
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
     val TAG = "MainActivity"
@@ -106,10 +109,24 @@ class MainActivity : AppCompatActivity() {
 
        fabCall.setOnClickListener{
            var intent = Intent(Intent.ACTION_DIAL)
-           intent.data = Uri.parse("tel:112")
+
+           val phoneNo: String = data.get(0).phone
+           val sms: String = "보호자가 도움을 요청하였습니다."
+
+           try {
+               val smsManager: SmsManager = SmsManager.getDefault()
+               smsManager.sendTextMessage(phoneNo, null, sms, null, null)
+               Toast.makeText(applicationContext, "전송 완료", Toast.LENGTH_LONG).show()
+           } catch (e: Exception) {
+               Toast.makeText(applicationContext, "SMS failed", Toast.LENGTH_LONG).show()
+               e.printStackTrace()
+           }
+
+            intent.data = Uri.parse("tel:112")
            if(intent.resolveActivity(packageManager) != null){
                startActivity(intent)
            }
+
        }
 
     }
