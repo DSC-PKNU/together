@@ -20,6 +20,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.emergency_call_list.view.*
 import java.util.*
 
@@ -57,7 +58,7 @@ class EmergencyCallSetting : Activity() {
                 }
             })
 
-        findViewById<Button>(R.id.add_number).setOnClickListener {
+        findViewById<FloatingActionButton>(R.id.add_number).setOnClickListener {
                 val contactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
                 startActivityForResult(contactIntent, 10)
 
